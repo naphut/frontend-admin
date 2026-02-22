@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'https://backend-ecomerce-shirt-3.onrender.com/api';
+export const API_BASE_URL = 'http://localhost:8000/api';
 
 // Interfaces
 export interface LoginResponse {
