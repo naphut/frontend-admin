@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'https://backend-ecomerce-shirt-4.onrender.com/api';
+export const API_BASE_URL = 'http://localhost:8000/api';
 
 // Interfaces
 export interface LoginResponse {
@@ -125,37 +125,59 @@ const handleResponse = async (response: Response) => {
 export const adminApi = {
   // ========== AUTH ENDPOINTS ==========
   async login(username: string, password: string): Promise<LoginResponse> {
-    const formData = new URLSearchParams();
-    formData.append('username', username);
-    formData.append('password', password);
+    try {
+      const formData = new URLSearchParams();
+      formData.append('username', username);
+      formData.append('password', password);
 
-    const response = await fetch(`${API_BASE_URL}/auth/token`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: formData,
-    });
+      console.log('Attempting login to:', `${API_BASE_URL}/auth/token`);
+      
+      const response = await fetch(`${API_BASE_URL}/auth/token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formData,
+      });
 
-    if (!response.ok) {
-      throw new Error('Login failed');
+      console.log('Login response status:', response.status);
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Login failed:', errorData);
+        throw new Error(errorData.detail || 'Login failed');
+      }
+
+      const data = await response.json();
+      console.log('Login success, token received');
+      
+      // Get user info
+      console.log('Fetching user info...');
+      const userResponse = await fetch(`${API_BASE_URL}/auth/me`, {
+        headers: {
+          'Authorization': `Bearer ${data.access_token}`,
+        },
+      });
+      
+      console.log('User info response status:', userResponse.status);
+      
+      if (!userResponse.ok) {
+        const errorData = await userResponse.json().catch(() => ({}));
+        console.error('Failed to fetch user:', errorData);
+        throw new Error(errorData.detail || 'Failed to fetch user info');
+      }
+      
+      const user = await userResponse.json();
+      console.log('User info received:', user);
+      
+      return {
+        ...data,
+        user,
+      };
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
     }
-
-    const data = await response.json();
-    
-    // Get user info
-    const userResponse = await fetch(`${API_BASE_URL}/auth/me`, {
-      headers: {
-        'Authorization': `Bearer ${data.access_token}`,
-      },
-    });
-    
-    const user = await userResponse.json();
-    
-    return {
-      ...data,
-      user,
-    };
   },
 
   async register(data: RegisterData): Promise<User> {

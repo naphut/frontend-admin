@@ -66,8 +66,9 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
 
   const login = async (username: string, password: string) => {
     try {
+      console.log('Starting login with username:', username);
       const response = await adminApi.login(username, password);
-      console.log('Login response:', response); // Debug log
+      console.log('Login response received:', response); // Debug log
       
       // Check if user is admin
       if (!response.user.is_admin) {
@@ -79,9 +80,12 @@ export const AdminAuthProvider = ({ children }: { children: React.ReactNode }) =
       setToken(response.access_token);
       setUser(response.user);
       toast.success('Login successful');
-    } catch (error) {
-      console.error('Login failed:', error);
-      toast.error('Invalid username or password');
+    } catch (error: any) {
+      console.error('Login failed with error:', error);
+      console.error('Error type:', typeof error);
+      console.error('Error message:', error?.message);
+      console.error('Error stack:', error?.stack);
+      toast.error(`Login failed: ${error?.message || 'Unknown error'}`);
       throw error;
     }
   };
