@@ -1,0 +1,7 @@
+{
+  "build": {
+    "env": {
+      "VITE_API_URL": "https://backend-ecomerce-shirt-3.onrender.com/api"
+    }
+  }
+}
